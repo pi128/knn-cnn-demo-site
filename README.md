@@ -14,14 +14,6 @@ The main model is:
 - `KNN` classifier
 - pretrained `ResNet18` used as the feature extractor
 
-## Files
-
-- `index.html`
-- `knn_cnn_demo_pool.js`
-- `knn_cnn_outputs/demo_pool/`
-- `project_code/knn_cnn_project.py`
-- `project_code/knn_image_project.py`
-
 ## How to run
 
 Install the Python packages:
@@ -81,7 +73,7 @@ The full train and validation dataset zip files are not included in this repo.
 
 ## Dataset links
 
-Related public source pages that match the crop/disease groups used in the combined dataset:
+Public source pages for the datasets used in the combined dataset:
 
 - https://universe.roboflow.com/search?q=American%20Bollworm%20on%20Cotton%20Anthracnose%20on%20Cotton%20Army%20worm%20Cotton%20Aphid%20RedRot%20sugarcane
 - https://universe.roboflow.com/search?q=moth%20class%3Aborer%20classification
