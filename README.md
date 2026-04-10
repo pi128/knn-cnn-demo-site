@@ -1,9 +1,11 @@
 # KNN CNN Plant Disease Project
 
-This repo contains:
+Live demo:
 
-- the GitHub Pages demo site
-- the project code
+- GitHub Pages: https://pi128.github.io/knn-cnn-demo-site/
+- Main page file: `index.html`
+
+This repo contains the GitHub Pages demo site and the project code.
 
 ## Main model
 
@@ -16,7 +18,7 @@ The main model is:
 
 - `index.html`
 - `knn_cnn_demo_pool.js`
-- `knn_cnn_outputs/demo_pool/...`
+- `knn_cnn_outputs/demo_pool/`
 - `project_code/knn_cnn_project.py`
 - `project_code/knn_image_project.py`
 
@@ -46,13 +48,21 @@ python project_code/knn_image_project.py \
 
 ## Dataset used
 
-The project uses a plant disease and pest image dataset with 42 classes across:
+The project uses a combined plant disease and pest image dataset with 42 classes across:
 
 - cotton
 - wheat
 - rice
 - maize
 - sugarcane
+
+The combined dataset used for the project includes classes from these crop groups:
+
+- cotton disease and pest images
+- wheat disease and pest images
+- rice disease images
+- maize disease and pest images
+- sugarcane disease images
 
 Examples of classes in the dataset:
 
@@ -68,3 +78,10 @@ Examples of classes in the dataset:
 - Healthy cotton
 
 The full train and validation dataset zip files are not included in this repo.
+
+## Dataset links
+
+Related public source pages that match the crop/disease groups used in the combined dataset:
+
+- https://universe.roboflow.com/search?q=American%20Bollworm%20on%20Cotton%20Anthracnose%20on%20Cotton%20Army%20worm%20Cotton%20Aphid%20RedRot%20sugarcane
+- https://universe.roboflow.com/search?q=moth%20class%3Aborer%20classification
