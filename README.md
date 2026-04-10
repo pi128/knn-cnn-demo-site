@@ -37,3 +37,28 @@ python project_code/knn_image_project.py \
   --train-zip /path/to/Train.zip \
   --val-zip /path/to/Validation.zip
 ```
+
+## Dataset used
+
+The project uses a combined plant disease and pest image dataset with 42 classes across:
+
+- cotton
+- wheat
+- rice
+- maize
+- sugarcane
+
+Example classes in the dataset include:
+
+- American Bollworm on Cotton
+- Anthracnose on Cotton
+- Cotton Aphid
+- Wheat black rust
+- Wheat powdery mildew
+- Rice Blast
+- Tungro
+- RedRot sugarcane
+- Leaf Curl
+- Healthy cotton
+
+The full train and validation dataset zip files are not included in this repo.
