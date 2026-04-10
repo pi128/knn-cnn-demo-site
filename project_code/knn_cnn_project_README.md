@@ -1,27 +1,43 @@
 This keeps `KNN` as the classifier, but replaces the old handcrafted image features with embeddings from a pretrained `ResNet18`.
 
-Run it with the environment that has `torch` and `torchvision`:
+Run it from the repo root with a Python environment that has:
+
+- `torch`
+- `torchvision`
+- `pillow`
+- `numpy`
 
 ```bash
-Documents/Fall2025/CS3642/demo_venv/bin/python "Documents/Spring 2026/CS4267 ML/knn_cnn_project.py"
+python project_code/knn_cnn_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip
 ```
 
 Live demo after the first run:
 
 ```bash
-Documents/Fall2025/CS3642/demo_venv/bin/python "Documents/Spring 2026/CS4267 ML/knn_cnn_project.py" \
-  --predict-image "Documents/Spring 2026/CS4267 ML/knn_cnn_outputs/demo_images/Cotton_Aphid__10.jpg"
+python project_code/knn_cnn_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip \
+  --predict-image knn_cnn_outputs/demo_images/example.jpg
 ```
 
 GUI demo:
 
 ```bash
-Documents/Fall2025/CS3642/demo_venv/bin/python "Documents/Spring 2026/CS4267 ML/knn_cnn_project.py" \
+python project_code/knn_cnn_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip \
   --demo-gui \
-  --predict-image "Documents/Spring 2026/CS4267 ML/knn_outputs/demo_images/Cotton_Aphid__10.jpg"
+  --predict-image knn_cnn_outputs/demo_images/example.jpg
 ```
 
 Outputs go to:
 
-- `Documents/Spring 2026/CS4267 ML/knn_cnn_outputs`
-- `Documents/Spring 2026/CS4267 ML/knn_cnn_cache`
+- `knn_cnn_outputs/`
+- `knn_cnn_cache/`
+
+Notes:
+
+- The scripts expect the train and validation image dataset to be provided separately.
+- The full dataset zips and model cache files are intentionally not committed in this repo.

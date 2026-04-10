@@ -1,7 +1,12 @@
-Use this with the Python environment that already has `numpy` and `cv2`:
+Use this with a Python environment that already has:
+
+- `numpy`
+- `opencv-python`
 
 ```bash
-Downloads/.venv_mv/bin/python "Documents/Spring 2026/CS4267 ML/knn_image_project.py"
+python project_code/knn_image_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip
 ```
 
 What it does:
@@ -11,17 +16,21 @@ What it does:
 - Runs KNN on a class-balanced sample for a faster demo
 - Uses stronger texture and shape features plus PCA before KNN
 - Picks the best `k` from the validation split
-- Saves metrics, predictions, and demo images to `Documents/Spring 2026/CS4267 ML/knn_outputs`
+- Saves metrics, predictions, and demo images to `knn_outputs/`
 
 Useful commands:
 
 ```bash
-Downloads/.venv_mv/bin/python "Documents/Spring 2026/CS4267 ML/knn_image_project.py"
+python project_code/knn_image_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip
 ```
 
 ```bash
-Downloads/.venv_mv/bin/python "Documents/Spring 2026/CS4267 ML/knn_image_project.py" \
-  --predict-image "Documents/Spring 2026/CS4267 ML/knn_outputs/demo_images/Anthracnose_on_Cotton__Image_5.jpg"
+python project_code/knn_image_project.py \
+  --train-zip /path/to/Train.zip \
+  --val-zip /path/to/Validation.zip \
+  --predict-image knn_outputs/demo_images/example.jpg
 ```
 
 The first run builds feature caches, so later runs should be faster.
