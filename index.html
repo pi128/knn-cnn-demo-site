@@ -181,6 +181,7 @@ Best k: 1</div>
       <div class="panel">
         <div class="controls">
           <input id="imageInput" type="file" accept="image/*">
+          <button id="runCnnButton" type="button" disabled>Run CNN</button>
           <button id="clearButton" type="button">Clear</button>
         </div>
         <img id="preview" alt="Selected image preview">
@@ -194,7 +195,7 @@ Best k: 1</div>
     <div class="panel">
       <div class="metric-grid" id="svmMetrics"></div>
       <div class="controls">
-        <button id="svmSampleButton" type="button">Run Random SVM Sample</button>
+        <button id="svmSampleButton" type="button">Run SVM</button>
       </div>
       <div class="terminal prediction" id="svmPrediction">SVM model loaded from SVMDemo.zip. Run a sample to classify one held-out 15-feature vector.</div>
     </div>
@@ -404,6 +405,7 @@ Best k: 1</div>
     const imageInput = document.getElementById("imageInput");
     const preview = document.getElementById("preview");
     const prediction = document.getElementById("prediction");
+    const runCnnButton = document.getElementById("runCnnButton");
     const clearButton = document.getElementById("clearButton");
     let previewUrl = null;
 
@@ -419,10 +421,22 @@ Best k: 1</div>
       preview.src = previewUrl;
       preview.style.display = "block";
       await preview.decode();
+      runCnnButton.disabled = false;
+      prediction.textContent = "Image selected. Click Run CNN to classify it.";
+    });
+
+    runCnnButton.addEventListener("click", async () => {
+      if (!preview.src) {
+        prediction.textContent = "Select an image before running CNN.";
+        return;
+      }
+      runCnnButton.disabled = true;
       try {
         await predictImage(preview, prediction);
       } catch (error) {
         prediction.textContent = `Prediction failed: ${error.message}`;
+      } finally {
+        runCnnButton.disabled = false;
       }
     });
 
@@ -430,6 +444,7 @@ Best k: 1</div>
       imageInput.value = "";
       preview.removeAttribute("src");
       preview.style.display = "none";
+      runCnnButton.disabled = true;
       prediction.textContent = "Select an image or run one of the demo cards.";
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
