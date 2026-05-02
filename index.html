@@ -169,25 +169,11 @@
 Input size: 224 x 224 RGB
 Output classes: 42
 
-Original project result:
-Model type: KNN classifier with pretrained ResNet18 embeddings
-Overall validation accuracy: 0.8123
-Best k: 1</div>
-  </div>
-
-  <div class="section">
-    <h2>CNN Prediction</h2>
-    <div class="predictor">
-      <div class="panel">
-        <div class="controls">
-          <input id="imageInput" type="file" accept="image/*">
-          <button id="runCnnButton" type="button" disabled>Run CNN</button>
-          <button id="clearButton" type="button">Clear</button>
-        </div>
-        <img id="preview" alt="Selected image preview">
-      </div>
-      <div class="terminal prediction" id="prediction">Select an image or run one of the demo cards.</div>
-    </div>
+Scores:
+KNN validation accuracy: 81.23%
+CNN demo-pool accuracy: 79.17%
+SVM test accuracy: 99.97%
+SVM weighted F1: 0.9997</div>
   </div>
 
   <div class="section">
@@ -399,56 +385,6 @@ Best k: 1</div>
         result.textContent = `Prediction failed: ${error.message}`;
       } finally {
         event.target.disabled = false;
-      }
-    });
-
-    const imageInput = document.getElementById("imageInput");
-    const preview = document.getElementById("preview");
-    const prediction = document.getElementById("prediction");
-    const runCnnButton = document.getElementById("runCnnButton");
-    const clearButton = document.getElementById("clearButton");
-    let previewUrl = null;
-
-    imageInput.addEventListener("change", async () => {
-      const file = imageInput.files && imageInput.files[0];
-      if (!file) {
-        return;
-      }
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-      previewUrl = URL.createObjectURL(file);
-      preview.src = previewUrl;
-      preview.style.display = "block";
-      await preview.decode();
-      runCnnButton.disabled = false;
-      prediction.textContent = "Image selected. Click Run CNN to classify it.";
-    });
-
-    runCnnButton.addEventListener("click", async () => {
-      if (!preview.src) {
-        prediction.textContent = "Select an image before running CNN.";
-        return;
-      }
-      runCnnButton.disabled = true;
-      try {
-        await predictImage(preview, prediction);
-      } catch (error) {
-        prediction.textContent = `Prediction failed: ${error.message}`;
-      } finally {
-        runCnnButton.disabled = false;
-      }
-    });
-
-    clearButton.addEventListener("click", () => {
-      imageInput.value = "";
-      preview.removeAttribute("src");
-      preview.style.display = "none";
-      runCnnButton.disabled = true;
-      prediction.textContent = "Select an image or run one of the demo cards.";
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        previewUrl = null;
       }
     });
 
