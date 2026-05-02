@@ -30,6 +30,94 @@
       white-space: pre-wrap;
     }
 
+    .predictor {
+      display: grid;
+      grid-template-columns: minmax(260px, 360px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #1b1b1b;
+      border: 1px solid #b7d8b7;
+      padding: 12px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    button,
+    input::file-selector-button {
+      background: #d8ffd8;
+      color: #111;
+      border: 1px solid #111;
+      padding: 7px 10px;
+      font-family: monospace;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    #preview {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      display: none;
+      background: #111;
+      border: 1px solid #666;
+    }
+
+    .prediction {
+      min-height: 122px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .metric {
+      background: #111;
+      border: 1px solid #666;
+      padding: 10px;
+    }
+
+    .metric-value {
+      color: #d8ffd8;
+      font-size: 18px;
+      margin-top: 4px;
+    }
+
+    .prediction-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      height: 8px;
+      background: #111;
+      border: 1px solid #666;
+      margin-top: 3px;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: #d8ffd8;
+    }
+
     .images {
       display: flex;
       flex-wrap: wrap;
@@ -55,17 +143,61 @@
     .label {
       margin-bottom: 6px;
     }
+
+    .card button {
+      margin-top: 4px;
+      width: 100%;
+    }
+
+    .cnn-result {
+      margin-top: 8px;
+      color: #d8ffd8;
+      min-height: 18px;
+    }
+
+    @media (max-width: 760px) {
+      .predictor {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="section">
     <h1>KNN CNN Demo</h1>
-    <div class="terminal">Model type: KNN classifier
-Feature extractor: pretrained ResNet18 embeddings
+    <div class="terminal">Browser CNN model: cnn_crop_id.keras converted to TensorFlow.js
+Input size: 224 x 224 RGB
+Output classes: 42
+
+Original project result:
+Model type: KNN classifier with pretrained ResNet18 embeddings
 Overall validation accuracy: 0.8123
-Best k: 1
-Training images used: 3930
-Validation images used: 1023</div>
+Best k: 1</div>
+  </div>
+
+  <div class="section">
+    <h2>CNN Prediction</h2>
+    <div class="predictor">
+      <div class="panel">
+        <div class="controls">
+          <input id="imageInput" type="file" accept="image/*">
+          <button id="clearButton" type="button">Clear</button>
+        </div>
+        <img id="preview" alt="Selected image preview">
+      </div>
+      <div class="terminal prediction" id="prediction">Select an image or run one of the demo cards.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>SVM Demo</h2>
+    <div class="panel">
+      <div class="metric-grid" id="svmMetrics"></div>
+      <div class="controls">
+        <button id="svmSampleButton" type="button">Run Random SVM Sample</button>
+      </div>
+      <div class="terminal prediction" id="svmPrediction">SVM model loaded from SVMDemo.zip. Run a sample to classify one held-out 15-feature vector.</div>
+    </div>
   </div>
 
   <div class="section">
@@ -73,8 +205,15 @@ Validation images used: 1023</div>
     <div class="images" id="images"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+  <script src="cnn_model_labels.js"></script>
+  <script src="svm_model.js"></script>
   <script src="knn_cnn_demo_pool.js"></script>
   <script>
+    const MODEL_URL = "tfjs_graph_model/model.json";
+    const labels = window.CNN_CROP_ID_LABELS || [];
+    let modelPromise = null;
+
     function shuffle(items) {
       const copy = [...items];
       for (let i = copy.length - 1; i > 0; i--) {
@@ -84,17 +223,222 @@ Validation images used: 1023</div>
       return copy;
     }
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function getModel() {
+      if (!modelPromise) {
+        modelPromise = tf.loadGraphModel(MODEL_URL);
+      }
+      return modelPromise;
+    }
+
+    function topK(values, count) {
+      return Array.from(values)
+        .map((score, index) => ({ index, score }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, count);
+    }
+
+    function renderPrediction(target, rows) {
+      target.innerHTML = rows.map((row) => {
+        const label = labels[row.index] || `Class ${row.index}`;
+        const percent = row.score * 100;
+        return `
+          <div class="prediction-row">
+            <div>
+              <div>${escapeHtml(label)}</div>
+              <div class="bar"><span style="width:${percent.toFixed(1)}%"></span></div>
+            </div>
+            <div>${percent.toFixed(1)}%</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function predictImage(imageEl, targetEl) {
+      targetEl.textContent = "Loading model...";
+      const model = await getModel();
+      targetEl.textContent = "Running prediction...";
+      const input = tf.tidy(() => tf.browser
+        .fromPixels(imageEl)
+        .resizeBilinear([224, 224], true)
+        .toFloat()
+        .expandDims(0));
+      const output = model.predict(input);
+      const tensor = Array.isArray(output) ? output[0] : output;
+      const values = await tensor.data();
+      input.dispose();
+      if (Array.isArray(output)) {
+        output.forEach((item) => item.dispose());
+      } else {
+        output.dispose();
+      }
+      renderPrediction(targetEl, topK(values, 5));
+    }
+
+    function svmLabel(classNumber) {
+      const svm = window.SVM_DEMO_MODEL;
+      return svm.classNames[classNumber] || `Class ${classNumber}`;
+    }
+
+    function rbfKernel(left, right, gamma) {
+      let distance = 0;
+      for (let i = 0; i < left.length; i++) {
+        const diff = left[i] - right[i];
+        distance += diff * diff;
+      }
+      return Math.exp(-gamma * distance);
+    }
+
+    function predictSvm(features) {
+      const svm = window.SVM_DEMO_MODEL;
+      const votes = new Array(svm.classes.length).fill(0);
+      let pairIndex = 0;
+
+      for (let i = 0; i < svm.classes.length; i++) {
+        for (let j = i + 1; j < svm.classes.length; j++) {
+          let score = svm.intercept[pairIndex];
+
+          for (let k = svm.supportStart[i]; k < svm.supportEnd[i]; k++) {
+            score += svm.dualCoef[j - 1][k] * rbfKernel(features, svm.supportVectors[k], svm.gamma);
+          }
+
+          for (let k = svm.supportStart[j]; k < svm.supportEnd[j]; k++) {
+            score += svm.dualCoef[i][k] * rbfKernel(features, svm.supportVectors[k], svm.gamma);
+          }
+
+          if (score > 0) {
+            votes[i] += 1;
+          } else {
+            votes[j] += 1;
+          }
+          pairIndex += 1;
+        }
+      }
+
+      let winner = 0;
+      for (let i = 1; i < votes.length; i++) {
+        if (votes[i] > votes[winner]) {
+          winner = i;
+        }
+      }
+
+      return {
+        classNumber: svm.classes[winner],
+        voteCount: votes[winner],
+        votes
+      };
+    }
+
+    function renderSvmMetrics() {
+      const svm = window.SVM_DEMO_MODEL;
+      const metrics = svm.metrics;
+      document.getElementById("svmMetrics").innerHTML = [
+        ["Accuracy", `${(metrics.accuracy * 100).toFixed(2)}%`],
+        ["Weighted F1", metrics.f1Weighted.toFixed(4)],
+        ["Train samples", metrics.trainSamples],
+        ["Test samples", metrics.testSamples],
+        ["Features", metrics.featureCount],
+        ["Trained classes", metrics.trainedClasses]
+      ].map(([label, value]) => `
+        <div class="metric">
+          <div>${escapeHtml(label)}</div>
+          <div class="metric-value">${escapeHtml(value)}</div>
+        </div>
+      `).join("");
+    }
+
+    function runRandomSvmSample() {
+      const svm = window.SVM_DEMO_MODEL;
+      const sample = svm.testSamples[Math.floor(Math.random() * svm.testSamples.length)];
+      const prediction = predictSvm(sample.features);
+      const correct = prediction.classNumber === sample.actual;
+      document.getElementById("svmPrediction").innerHTML = `
+        Actual: ${escapeHtml(svmLabel(sample.actual))}
+        Predicted: ${escapeHtml(svmLabel(prediction.classNumber))}
+        Result: ${correct ? "Correct" : "Incorrect"}
+        Winning votes: ${prediction.voteCount} / ${svm.classes.length - 1}
+        Feature vector: [${sample.features.map((value) => value.toFixed(3)).join(", ")}]
+      `;
+    }
+
     const demos = window.KNN_CNN_DEMO_POOL || [];
     const randomized = shuffle(demos).slice(0, 12);
     const imagesEl = document.getElementById("images");
-    imagesEl.innerHTML = randomized.map((item) => `
+    imagesEl.innerHTML = randomized.map((item, index) => `
       <div class="card">
-        <img src="${item.image}" alt="${item.actual}">
-        <div class="label">Actual: ${item.actual}</div>
-        <div class="label">Predicted: ${item.predicted}</div>
-        <div class="label">Result: ${item.result}</div>
+        <img id="demoImage${index}" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.actual)}">
+        <div class="label">Actual: ${escapeHtml(item.actual)}</div>
+        <div class="label">KNN predicted: ${escapeHtml(item.predicted)}</div>
+        <div class="label">KNN result: ${escapeHtml(item.result)}</div>
+        <button type="button" data-demo-index="${index}">Run CNN</button>
+        <div class="cnn-result" id="demoResult${index}"></div>
       </div>
     `).join("");
+
+    imagesEl.addEventListener("click", async (event) => {
+      if (!event.target.matches("button[data-demo-index]")) {
+        return;
+      }
+      const index = event.target.getAttribute("data-demo-index");
+      const image = document.getElementById(`demoImage${index}`);
+      const result = document.getElementById(`demoResult${index}`);
+      event.target.disabled = true;
+      try {
+        await predictImage(image, result);
+      } catch (error) {
+        result.textContent = `Prediction failed: ${error.message}`;
+      } finally {
+        event.target.disabled = false;
+      }
+    });
+
+    const imageInput = document.getElementById("imageInput");
+    const preview = document.getElementById("preview");
+    const prediction = document.getElementById("prediction");
+    const clearButton = document.getElementById("clearButton");
+    let previewUrl = null;
+
+    imageInput.addEventListener("change", async () => {
+      const file = imageInput.files && imageInput.files[0];
+      if (!file) {
+        return;
+      }
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      previewUrl = URL.createObjectURL(file);
+      preview.src = previewUrl;
+      preview.style.display = "block";
+      await preview.decode();
+      try {
+        await predictImage(preview, prediction);
+      } catch (error) {
+        prediction.textContent = `Prediction failed: ${error.message}`;
+      }
+    });
+
+    clearButton.addEventListener("click", () => {
+      imageInput.value = "";
+      preview.removeAttribute("src");
+      preview.style.display = "none";
+      prediction.textContent = "Select an image or run one of the demo cards.";
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+    });
+
+    renderSvmMetrics();
+    document.getElementById("svmSampleButton").addEventListener("click", runRandomSvmSample);
   </script>
 </body>
 </html>

@@ -7,6 +7,25 @@ Live demo:
 
 This repo contains the GitHub Pages demo site and the project code.
 
+## Browser CNN model
+
+The demo site also loads `tfjs_graph_model/model.json`, converted from
+`/Users/jameswidner/Downloads/cnn_crop_id.keras`, and runs predictions directly
+in the browser with TensorFlow.js.
+
+The class labels are in `cnn_model_labels.js`. The Keras archive did not embed a
+label map, so verify that file against the original training class order before
+using the browser predictions for grading or reporting.
+
+## Browser SVM model
+
+The SVM panel loads `svm_model.js`, exported from
+`/Users/jameswidner/Downloads/SVMDemo.zip`. It runs the downloaded RBF SVM in
+JavaScript against held-out 15-feature test vectors from the zip.
+
+The zip did not include the image-to-15-feature preprocessing code, so the SVM
+panel classifies exported test vectors rather than arbitrary uploaded images.
+
 ## Main model
 
 The main model is:
